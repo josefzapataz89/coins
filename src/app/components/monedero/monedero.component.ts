@@ -30,7 +30,7 @@ export class MonederoComponent implements OnInit {
 
         resultados = this._cajero.calcular(denominaciones);
 
-        console.log('denominaciones: ', denominaciones);
+        console.log(`monto: ${denominaciones.monto} monedas: (${denominaciones.denominaciones.join(', ')})`);
         console.log('respuesta: ', resultados);
       });
 
