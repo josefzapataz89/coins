@@ -18,7 +18,8 @@ export class MonederoComponent implements OnInit {
 
   async calcular() {
     let row: number;
-    let denominaciones: Array<number>;
+    let denominaciones: any;
+    let resultados: any;
 
     let monedas = await this._cajero.leer_archivo().subscribe( (data) => {
       let lineas = data.split('\n');
@@ -27,7 +28,10 @@ export class MonederoComponent implements OnInit {
       cuentas.map( (item, index) => {
         denominaciones = this._cajero.dividir_linea(item);
 
-        console.log('respuesta: ', denominaciones);
+        resultados = this._cajero.calcular(denominaciones);
+
+        console.log('denominaciones: ', denominaciones);
+        console.log('respuesta: ', resultados);
       });
 
     });
