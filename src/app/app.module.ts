@@ -1,16 +1,24 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+
+import { CajeroService } from './services/cajero.service';
 
 import { AppComponent } from './app.component';
+import { MonederoComponent } from './components/monedero/monedero.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MonederoComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    HttpClientModule,
   ],
-  providers: [],
+  providers: [
+    CajeroService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
