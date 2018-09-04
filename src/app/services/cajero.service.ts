@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { truncate } from 'fs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,14 +9,19 @@ export class CajeroService {
   private lista_monedas: any;
   private bandera: boolean;
   private cant_monedas: number;
+  private acumulador: number;
 
 
-  constructor(public _http: HttpClient) { }
+  constructor(public _http: HttpClient) {
+    this.acumulador = 0;
+    this.cant_monedas = 0;
+    this.bandera = true;
+  }
 
   leer_archivo() {
     // lectura de archivo
-    return this._http.get('assets/input.txt', { responseType: 'text' });
-    // return this._http.get('assets/test.txt', { responseType: 'text' });
+    // return this._http.get('assets/input.txt', { responseType: 'text' });
+    return this._http.get('assets/test.txt', { responseType: 'text' });
   }
 
   dividir_linea(cadena: string) {
@@ -53,8 +57,26 @@ export class CajeroService {
     this.lista_monedas = denominacion.denominaciones.sort(this.ascendente);
     this.bandera = true;
     this.cant_monedas = 0;
+    this.acumulador = 0;
 
-    return this.combinaciones(denominacion.monto, 0);
+    for (let i = 1; i <= denominacion.monto; i++) {
+      let aux: number = 0;
+
+      aux = this.combinaciones(i, 0);
+
+      console.log(`(valores: ${this.lista_monedas.join(',')}) monto: ${i} monedas: ${aux}`);
+      this.acumulador += aux;
+
+      if (aux > this.cant_monedas) {
+        this.cant_monedas = aux;
+      }
+    }
+
+    let prom: number;
+
+    prom = (this.acumulador / denominacion.monto).toFixed(3);
+
+    return `${prom} ${this.cant_monedas}`;
   }
   private descendente(a: number, b: number) {
     let comparacion = 0;
@@ -102,12 +124,38 @@ export class CajeroService {
     } else if ( monto < moneda ) {
 
       let i: number;
+      let j: number;
+      let k: number;
+      let l: number;
 
       i = this.optimo(monto);
+      j = this.combinaciones(monto, i);
+      k = this.combinaciones(monto, index + 1);
+      l = this.combinaciones(moneda - monto, index + 1) + 1;
 
-      return this.combinaciones(monto, i);
+      if ( j <= k && j <= l ) {
+        return this.combinaciones(monto, i);
+      } else if ( k < j && k < l ) {
+        return this.combinaciones(monto, index + 1);
+      } else if ( l < k && l < j ) {
+        if (this.bandera) {
+          this.bandera = false;
+          return this.combinaciones(moneda - monto, index) + 1;
+        } else {
+          i = this.optimo(monto);
+          j = this.combinaciones(monto, i);
+          k = this.combinaciones(monto, index + 1);
+
+          if (j <= k) {
+            return this.combinaciones(monto, i);
+          } else {
+            return this.combinaciones(monto, index + 1);
+          }
+        }
+      }
+
     } else if ( monto === moneda ) {
-      return this.combinaciones(monto - moneda, index) + 1;
+      return 1;
     }
 
   }
