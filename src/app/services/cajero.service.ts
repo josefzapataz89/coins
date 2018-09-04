@@ -104,58 +104,35 @@ export class CajeroService {
   }
 
   private combinaciones(monto: number, index: number): number {
+    if (monto < 0) {
+      return 0;
+    }
+    if (monto === 0) {
+      return 0;
+    }
+
     let moneda: number;
     moneda = this.lista_monedas[index];
 
-    if ( monto < 0) {
-      return 0;
-    }
-
-    if ( monto === 0) {
-      return 0;
-    }
-
-    if ( index === this.lista_monedas.length && monto > 0 ) {
-      return 0;
-    }
-
-    if ( monto > moneda ) {
-      return this.combinaciones(monto - moneda, index) + 1;
-    } else if ( monto < moneda ) {
-
+    if ( monto < moneda ) {
       let i: number;
-      let j: number;
-      let k: number;
-      let l: number;
-
       i = this.optimo(monto);
+
+      let j: number;
       j = this.combinaciones(monto, i);
-      k = this.combinaciones(monto, index + 1);
-      l = this.combinaciones(moneda - monto, index + 1) + 1;
+      let k: number;
+      k = this.combinaciones(moneda - monto, index + 1);
 
-      if ( j <= k && j <= l ) {
+      if ( j <= k ) {
         return this.combinaciones(monto, i);
-      } else if ( k < j && k < l ) {
-        return this.combinaciones(monto, index + 1);
-      } else if ( l < k && l < j ) {
-        if (this.bandera) {
-          this.bandera = false;
-          return this.combinaciones(moneda - monto, index) + 1;
-        } else {
-          i = this.optimo(monto);
-          j = this.combinaciones(monto, i);
-          k = this.combinaciones(monto, index + 1);
-
-          if (j <= k) {
-            return this.combinaciones(monto, i);
-          } else {
-            return this.combinaciones(monto, index + 1);
-          }
-        }
+      } else {
+        return this.combinaciones(moneda - monto, index + 1) + 1;
       }
 
     } else if ( monto === moneda ) {
-      return 1;
+      return this.combinaciones(monto - moneda, index) + 1;
+    } else if ( monto > moneda ) {
+      return this.combinaciones(monto - moneda, index) + 1;
     }
 
   }
