@@ -8,6 +8,7 @@ import { async } from 'rxjs/internal/scheduler/async';
   styleUrls: ['./monedero.component.css']
 })
 export class MonederoComponent implements OnInit {
+  listado_resultados: Array<any>;
 
   constructor(public _cajero: CajeroService) { }
 
@@ -23,6 +24,7 @@ export class MonederoComponent implements OnInit {
 
     let monedas = await this._cajero.leer_archivo().subscribe( (data) => {
       let lineas = data.split('\n');
+      this.listado_resultados = [lineas.length];
       let cuentas = lineas.slice(1, lineas.length);
 
       cuentas.map( (item, index) => {
@@ -31,6 +33,10 @@ export class MonederoComponent implements OnInit {
         resultados = this._cajero.calcular(denominaciones);
 
         console.log(`monto: ${denominaciones.monto} monedas: (${denominaciones.denominaciones.join(', ')}) resultado: ${resultados}`);
+
+        // tslint:disable-next-line:max-line-length
+        // this.listado_resultados.push(`monto: ${denominaciones.monto} monedas: (${denominaciones.denominaciones.join(', ')}) resultado: ${resultados}`);
+        this.listado_resultados.push(`monto: ${denominaciones.monto} monedas: (${denominaciones.denominaciones.join(', ')}) resultado: ${resultados}`);
       });
 
     });

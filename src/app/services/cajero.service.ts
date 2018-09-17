@@ -56,8 +56,19 @@ export class CajeroService {
     this.cant_monedas = 0;
     this.acumulador = 0;
 
+    // let buena_pos = 0;
+    // let buena = 9999999;
+    // for (let j = 0; j < this.lista_monedas.length; j++) {
+    //   let _acum: number;
+    //   _acum = this.evaluar(94, j, false);
 
-    // this.acumulador = this.combinaciones(34, buena_pos, false);
+    //   if (_acum < buena) {
+    //     buena = _acum;
+    //     buena_pos = j;
+    //   }
+    // }
+    // this.acumulador = this.combinaciones(94, buena_pos, false);
+
 
     for (let i = 1; i <= denominacion.monto; i++) {
       let aux: number = 0;
@@ -67,10 +78,11 @@ export class CajeroService {
       this.band = false;
 
       for (let j = 0; j < this.lista_monedas.length; j++) {
-        this.acumulador = this.evaluar(i, j, false);
+        let _acum: number;
+        _acum = this.evaluar(i, j, false);
 
-        if (this.acumulador < buena) {
-          buena = this.acumulador;
+        if (_acum < buena) {
+          buena = _acum;
           buena_pos = j;
         }
       }
@@ -89,7 +101,7 @@ export class CajeroService {
 
     let prom: string;
 
-    prom = (this.acumulador / denominacion.monto).toFixed(3);
+    prom = (this.acumulador / denominacion.monto).toFixed(2);
 
     return `${prom} ${this.cant_monedas}`;
   }
@@ -165,11 +177,42 @@ export class CajeroService {
     } else if ( monto === moneda ) {
       return this.combinaciones(monto - moneda, index, bandera);
     } else if ( monto > moneda ) {
-      console.log(`moneda: ${moneda}`)
-      return 1 + this.combinaciones(monto - moneda, index, bandera);
-    }
+      // console.log(`moneda: ${moneda}`)
+      // return 1 + this.combinaciones(monto - moneda, index, bandera);
 
+      // let j: number;
+      // j = 1 + this.evaluar(monto - moneda, index, bandera);
+
+      // let l: number;
+      // l = this.evaluar(monto, index + 1, bandera);
+
+      // if (l <= j && (index + 1) <= this.lista_monedas.length) {
+      //   return this.combinaciones(monto, index + 1, bandera);
+      // } else if (j <= l) {
+      //   return 1 + this.combinaciones(monto - moneda, index, bandera);
+      // }
+
+      // let buena = 9999999;
+      // let buena_pos = index;
+
+      // for (let j = index; j < this.lista_monedas.length; j++) {
+      //   let _acum: number;
+      //   _acum = this.evaluar(monto, j, false);
+
+      //   if (_acum < buena) {
+      //     buena = _acum;
+      //     buena_pos = j;
+      //   }
+      // }
+
+      // return this.combinaciones(monto, buena_pos, bandera);
+
+      let b_pos: number = this.mejor_ruta(index, monto);
+      console.log(`moneda: ${this.lista_monedas[b_pos]}`)
+      return 1 + this.combinaciones(monto - this.lista_monedas[b_pos], b_pos, bandera);
+    }
   }
+
   private evaluar(monto: number, index: number, bandera: boolean): number {
     if ( index > this.lista_monedas.length ) {
       return 0;
@@ -212,6 +255,36 @@ export class CajeroService {
       return this.evaluar(monto - moneda, index, bandera);
     } else if ( monto > moneda ) {
       return 1 + this.evaluar(monto - moneda, index, bandera);
+
+      // let j: number;
+      // j = 1 + this.evaluar(monto - moneda, index, bandera);
+
+      // let l: number;
+      // l = this.evaluar(monto, index + 1, bandera);
+
+      // if (l <= j && (index + 1) <= this.lista_monedas.length) {
+      //   return this.evaluar(monto, index + 1, bandera);
+      // } else if (j <= l) {
+      //   return 1 + this.evaluar(monto - moneda, index, bandera);
+      // }
+
+      // let buena = 9999999;
+      // let buena_pos = index;
+
+      // for (let j = index; j < this.lista_monedas.length; j++) {
+      //   let _acum: number;
+      //   _acum = this.evaluar(monto, j, false);
+
+      //   if (_acum < buena) {
+      //     buena = _acum;
+      //     buena_pos = j;
+      //   }
+      // }
+
+      // return this.evaluar(monto, buena_pos, bandera);
+
+      // let b_pos: number = this.mejor_ruta(index, monto);
+      // return 1 + this.evaluar(monto - this.lista_monedas[b_pos], b_pos, bandera);
     }
 
   }
@@ -224,14 +297,31 @@ export class CajeroService {
     diff = this.lista_monedas.map( (a, b) => {
       return Math.floor(monto / a);
     });
-
+    
     nuevo = diff.filter( (a, b) => {
       return (a > 0);
     });
-
+    
     pos = diff.indexOf(nuevo[0]);
-
+    
     return pos;
+  }
+
+  private mejor_ruta(index: number, monto: number) {
+      let buena = 9999999;
+      let buena_pos = index;
+
+      for (let j = index; j < this.lista_monedas.length; j++) {
+        let _acum: number;
+        _acum = this.evaluar(monto, j, false);
+
+        if (_acum < buena) {
+          buena = _acum;
+          buena_pos = j;
+        }
+      }
+
+      return buena_pos;
   }
 
 }
