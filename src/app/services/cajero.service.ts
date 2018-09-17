@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 export class CajeroService {
 
   private lista_monedas: any;
-  private bandera: boolean;
+  private band: boolean;
   private cant_monedas: number;
   private acumulador: number;
 
@@ -15,7 +15,6 @@ export class CajeroService {
   constructor(public _http: HttpClient) {
     this.acumulador = 0;
     this.cant_monedas = 0;
-    this.bandera = true;
   }
 
   leer_archivo() {
@@ -28,7 +27,6 @@ export class CajeroService {
     let data: Array<string>;
     let monto: number;
     let tipos: number;
-
     let denominaciones: Array<number> = [];
 
     // console.log(`cadena: ${cadena} `);
@@ -55,16 +53,33 @@ export class CajeroService {
 
   calcular(denominacion: any) {
     this.lista_monedas = denominacion.denominaciones.sort(this.ascendente);
-    this.bandera = true;
     this.cant_monedas = 0;
     this.acumulador = 0;
 
+
+    // this.acumulador = this.combinaciones(34, buena_pos, false);
+
     for (let i = 1; i <= denominacion.monto; i++) {
       let aux: number = 0;
+      let buena = 9999999;
+      let buena_pos = 0;
 
-      aux = this.combinaciones(i, 0);
+      this.band = false;
 
-      console.log(`(valores: ${this.lista_monedas.join(',')}) monto: ${i} monedas: ${aux}`);
+      for (let j = 0; j < this.lista_monedas.length; j++) {
+        this.acumulador = this.evaluar(i, j, false);
+
+        if (this.acumulador < buena) {
+          buena = this.acumulador;
+          buena_pos = j;
+        }
+      }
+
+
+      console.log(`monedas: (${this.lista_monedas.join(',')}) monto: ${i}`);
+      aux = this.combinaciones(i, buena_pos, false);
+      console.log(`cantidad monedas: ${aux}`);
+
       this.acumulador += aux;
 
       if (aux > this.cant_monedas) {
@@ -72,7 +87,7 @@ export class CajeroService {
       }
     }
 
-    let prom: number;
+    let prom: string;
 
     prom = (this.acumulador / denominacion.monto).toFixed(3);
 
@@ -103,12 +118,67 @@ export class CajeroService {
     return comparacion;
   }
 
-  private combinaciones(monto: number, index: number): number {
+  private combinaciones(monto: number, index: number, bandera: boolean): number {
+    let moneda: number;
+    moneda = this.lista_monedas[index];
+
+    if ( index > this.lista_monedas.length ) {
+      return 0;
+    }
     if (monto < 0) {
       return 0;
     }
     if (monto === 0) {
+      console.log(`moneda: ${moneda}`);
+      return 1;
+    }
+
+
+    if ( monto < moneda ) {
+      let i: number;
+      i = this.optimo(monto);
+
+      let j: number;
+      j = this.evaluar(monto, i, bandera);
+
+      let k: number;
+      if (bandera === false) {
+        k = 1 + this.evaluar(moneda - monto, index + 1, false);
+      } else {
+        k = 9999;
+      }
+      let l: number;
+      l = this.evaluar(monto, index + 1, bandera);
+
+      // console.log(`monto: ${monto} moneda: ${moneda} j: ${j} k: ${k} l: ${l}`)
+
+      if ( j <= k && j <= l ) {
+        return this.combinaciones(monto, i, bandera);
+      } else if (k <= j && k <= l && bandera === false){
+        console.log(`moneda: ${moneda}`)
+        console.log(`vueltos`)
+        return 1 + this.combinaciones(moneda - monto, index + 1, true);
+      } else if (l <= j && l <= k){
+        return this.combinaciones(monto, index + 1, bandera);
+      }
+
+    } else if ( monto === moneda ) {
+      return this.combinaciones(monto - moneda, index, bandera);
+    } else if ( monto > moneda ) {
+      console.log(`moneda: ${moneda}`)
+      return 1 + this.combinaciones(monto - moneda, index, bandera);
+    }
+
+  }
+  private evaluar(monto: number, index: number, bandera: boolean): number {
+    if ( index > this.lista_monedas.length ) {
       return 0;
+    }
+    if (monto < 0) {
+      return 0;
+    }
+    if (monto === 0) {
+      return 1;
     }
 
     let moneda: number;
@@ -119,20 +189,29 @@ export class CajeroService {
       i = this.optimo(monto);
 
       let j: number;
-      j = this.combinaciones(monto, i);
-      let k: number;
-      k = this.combinaciones(moneda - monto, index + 1);
+      j = this.evaluar(monto, i, bandera);
 
-      if ( j <= k ) {
-        return this.combinaciones(monto, i);
+      let k: number;
+      if (bandera === false) {
+        k = this.evaluar(moneda - monto, index + 1, false) + 1;
       } else {
-        return this.combinaciones(moneda - monto, index + 1) + 1;
+        k = 9999;
+      }
+      let l: number;
+      l = this.evaluar(monto, index + 1, bandera);
+
+      if ( j <= k && j <= l ) {
+        return this.evaluar(monto, i, bandera);
+      } else if (k <= j && k <= l && bandera === false){
+        return 1 + this.evaluar(moneda - monto, index + 1, true);
+      } else if (l <= j && l <= k){
+        return this.evaluar(monto, index + 1, bandera);
       }
 
     } else if ( monto === moneda ) {
-      return this.combinaciones(monto - moneda, index) + 1;
+      return this.evaluar(monto - moneda, index, bandera);
     } else if ( monto > moneda ) {
-      return this.combinaciones(monto - moneda, index) + 1;
+      return 1 + this.evaluar(monto - moneda, index, bandera);
     }
 
   }
